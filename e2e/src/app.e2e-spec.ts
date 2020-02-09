@@ -2,7 +2,7 @@
 
 import { browser, element, by, ElementFinder, ElementArrayFinder } from 'protractor';
 import { promise } from 'selenium-webdriver';
-
+/*
 const expectedH1 = 'Tour of Heroes';
 const expectedTitle = `${expectedH1}`;
 const targetHero = { id: 15, name: 'Magneta' };
@@ -304,4 +304,78 @@ async function toHeroArray(allHeroes: ElementArrayFinder): Promise<Hero[]> {
   let promisedHeroes = await allHeroes.map(Hero.fromLi);
   // The cast is necessary to get around issuing with the signature of Promise.all()
   return <Promise<any>> Promise.all(promisedHeroes);
-}
+}*/
+
+describe('Taller tests', () => {
+
+  beforeAll(() => browser.get(''));
+
+  it('Buscar héroes', () => {
+    let text = 'na';
+    let input = element(by.css('input'));
+    input.sendKeys(text);
+    browser.sleep(1000);
+    let result = getHeroesBuscar();
+    expect(result.count()).toBe(3);
+    input.clear();
+  });
+
+  it('Editar un héroe', () => {
+    let text = 'Narco';
+    let input = element(by.css('input'));
+    input.sendKeys(text);
+    getHeroesBuscar().get(0).click();
+    browser.sleep(1000);
+    text = 'NarcoEdit';
+    input = element(by.css('input'));
+    input.clear();
+    input.sendKeys(text);
+    element(by.buttonText('save')).click();
+    browser.sleep(1000);
+    input.sendKeys(text);
+    let result = getHeroesBuscar();
+    expect(result.count()).toBe(1);
+  });
+
+  it('Eliminar un héroe', () => {
+    let text = 'NarcoEdit';
+    element(by.partialLinkText('Heroes')).click();
+    browser.sleep(1000);
+    element.all(by.css('.heroes li')).filter(function(item, index) {
+      return item.element(by.css('a')).getText().then(function(text) {
+        return text === '12 NarcoEdit';
+      });
+    }).first().element(by.buttonText('x')).click();
+    element(by.partialLinkText('Dashboard')).click();
+    browser.sleep(1000);
+    let input = element(by.css('input'));
+    input.sendKeys(text);
+    let result = getHeroesBuscar();
+    expect(result.count()).toBe(0);
+  });
+
+  it('Navegar a un héroe desde el dashboard', () => {
+    element(by.partialLinkText('Dashboard')).click();
+    element(by.partialLinkText('Celeritas')).click();
+    browser.sleep(3000);
+  });
+
+  it('Navegar a un héroe desde la lista de héroes', () => {
+    element(by.partialLinkText('Dashboard')).click();
+    let input = element(by.css('input'));
+    input.sendKeys('Celeritas');
+    getHeroesBuscar().get(0).click();
+    browser.sleep(3000);
+  });
+
+  it('Navegar a un héroe desde la búsqueda', () => {
+    element(by.partialLinkText('Heroes')).click();
+    element(by.partialLinkText('14 Celeritas')).click();
+    browser.sleep(3000);
+  });
+
+  function getHeroesBuscar() {
+    let navElts = element.all(by.css('.search-result li'));
+    return navElts;
+  }
+});
